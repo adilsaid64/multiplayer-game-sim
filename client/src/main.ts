@@ -1,29 +1,21 @@
-const TARGET_FPS = 15
-const FIXED_DT = 1000 / TARGET_FPS
+const TARGET_FPS = 30
+const DELTA_T = 1000 / TARGET_FPS
 
-let lastTime = performance.now()
-let accumulator = 0
+let tPrev = performance.now()
+let sumDeltaT = 0
 
-function update(dt: number) {
-  console.log('hello world', dt)
+function update(deltaT: number) {
+  console.log(deltaT)
 }
 
-// param time is passed in from requestAnimationFrame, it represents the time the function was called
-function loop(time: number) {
-  // how much time has elappsed from the start (lastTime) to now (time, when this function is called)
-  let frameTime = (time - lastTime)
-  lastTime = time
-
-  // sum the elappsed time
-  accumulator += frameTime
-
-  // once the elappsed time has passed our threshold, execute the update method
-  while (accumulator >= FIXED_DT) {
-    update(FIXED_DT)
-    accumulator -= FIXED_DT
+function gameLoop(tNow: number) {
+  const tDiff = tNow - tPrev
+  tPrev = tNow
+  sumDeltaT += tDiff
+  while (sumDeltaT >= DELTA_T) {
+    update(DELTA_T)
+    sumDeltaT -= DELTA_T
   }
-  requestAnimationFrame(loop)
+  requestAnimationFrame(gameLoop)
 }
-
-requestAnimationFrame(loop)
-
+requestAnimationFrame(gameLoop)
