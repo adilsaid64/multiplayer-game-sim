@@ -6,7 +6,7 @@ let tPrev = performance.now();
 let sumDeltaT = 0;
 
 const player = new Player({
-  startingPosition: { x: 0, y: 0 },
+  startingPosition: { x: 0, y: 10 },
   size: { x: 5, y: 5 },
 });
 
