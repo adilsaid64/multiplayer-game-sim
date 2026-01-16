@@ -3,20 +3,27 @@ interface Vector2D {
   y: number;
 }
 
+export class Entity {
+  position: Vector2D;
+  size: Vector2D;
+
+  constructor(position: Vector2D, size: Vector2D) {
+    this.position = { ...position };
+    this.size = { ...size };
+  }
+}
+
 interface PlayerArgs {
   startingPosition: Vector2D;
   size: Vector2D;
 }
 
-export class Player {
-  position: Vector2D;
+export class Player extends Entity {
   velocity: Vector2D;
-  size: Vector2D;
 
   constructor(args: PlayerArgs) {
-    this.position = { ...args.startingPosition };
+    super(args.startingPosition, args.size);
     this.velocity = { x: 0, y: 0 };
-    this.size = { ...args.size };
   }
 }
 
@@ -25,12 +32,9 @@ interface PlatformArgs {
   size: Vector2D;
 }
 
-export class Platform {
-  position: Vector2D;
-  size: Vector2D;
+export class Platform extends Entity {
   constructor(args: PlatformArgs) {
-    this.position = { ...args.position };
-    this.size = { ...args.size };
+    super(args.position, args.size);
   }
 }
 
@@ -38,9 +42,11 @@ interface GameArgs {
   players: Player[];
   platforms: Platform[];
 }
+
 export class Game {
   players: Player[];
   platforms: Platform[];
+
   constructor(args: GameArgs) {
     this.players = args.players;
     this.platforms = args.platforms;
