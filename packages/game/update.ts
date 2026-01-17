@@ -44,20 +44,27 @@ function checkPlayerPlatformCollision(state: Game) {
       console.log(playerBounds, platformBounds)
       // check intersection
       if (checkForIntersection({ entityA: playerBounds, entityB: platformBounds })) {
-        console.log('collision found!')
       } else {
+        console.log('collision found!')
+        player.velocity = { ...{ x: 0, y: 0 } }
       }
     }
+  }
+}
+
+function updatePosition(dt: number, state: Game) {
+  for (const player of state.players) {
+    player.position.y += player.velocity.y * dt;
   }
 }
 
 function updateGravity(dt: number, state: Game) {
   for (const player of state.players) {
     player.velocity.y += GRAVITY * dt;
-    player.position.y += player.velocity.y * dt;
   }
 }
 export function update(dt: number, state: Game) {
   updateGravity(dt / 1000, state)
   checkPlayerPlatformCollision(state)
+  updatePosition(dt / 1000, state)
 }

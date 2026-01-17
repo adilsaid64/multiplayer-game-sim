@@ -5,6 +5,8 @@ import { update } from '../../packages/game/update';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
+canvas.height = 500
+canvas.width = 500
 
 function render(game: Game) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -37,14 +39,14 @@ let sumDeltaT = 0;
 
 const player = new Player({
   startingPosition: {
-    x: 0, y: 100
+    x: 0, y: 500
   },
   size: { x: 20, y: 20 },
 });
 
 const platform = new Platform({
   position: {
-    x: 0, y: 50,
+    x: 0, y: 250,
   },
   size: { x: 300, y: 20 },
 });
