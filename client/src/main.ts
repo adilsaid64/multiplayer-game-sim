@@ -34,14 +34,14 @@ let sumDeltaT = 0;
 
 const player = new Player({
   startingPosition: {
-    x: 50, y: 510
+    x: 250, y: 510
   },
   size: { x: 20, y: 20 },
 });
 
 const platform = new Platform({
   position: {
-    x: 0, y: 250,
+    x: 250, y: 250,
   },
   size: { x: 300, y: 20 },
 });
