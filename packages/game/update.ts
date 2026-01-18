@@ -39,7 +39,7 @@ function checkForIntersection(args: CheckForIntersectionArgs): boolean {
   },
   )
   // if any are true, there is a intersection
-  return (entityAIsLeftOfEntityB || entiryAIsTopOfEntityB || entiryAIsRightOfEntityB || entiryAIsButtomOfEntityB)
+  return !(entityAIsLeftOfEntityB || entiryAIsTopOfEntityB || entiryAIsRightOfEntityB || entiryAIsButtomOfEntityB)
 }
 
 function checkPlayerPlatformCollision(state: Game) {
@@ -47,13 +47,12 @@ function checkPlayerPlatformCollision(state: Game) {
     const playerBounds = getBounds({ entity: player });
     for (const platform of state.platforms) {
       const platformBounds = getBounds({ entity: platform });
-      // console.log(player.position, platform.position)
-      // console.log(playerBounds, platformBounds)
       // check intersection
       if (checkForIntersection({ entityA: playerBounds, entityB: platformBounds })) {
-      } else {
         console.log('collision found!')
         player.velocity = { ...{ x: 0, y: 0 } }
+      } else {
+        console.log('no collision')
       }
     }
   }
