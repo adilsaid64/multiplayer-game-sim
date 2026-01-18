@@ -27,12 +27,19 @@ interface CheckForIntersectionArgs {
   entityB: AABB
 }
 function checkForIntersection(args: CheckForIntersectionArgs): boolean {
-  const cond1 = args.entityA.right > args.entityB.left
-  const cond2 = args.entityA.bottom < args.entityB.top
-  const cond3 = args.entityA.left < args.entityB.right
-  const cond4 = args.entityA.top > args.entityB.bottom
+  const entityAIsLeftOfEntityB = args.entityA.right < args.entityB.left
+  const entiryAIsTopOfEntityB = args.entityA.bottom > args.entityB.top
+  const entiryAIsRightOfEntityB = args.entityA.left > args.entityB.right
+  const entiryAIsButtomOfEntityB = args.entityA.top < args.entityB.bottom
+  console.log({
+    entityAIsLeftOfEntityB,
+    entiryAIsTopOfEntityB,
+    entiryAIsRightOfEntityB,
+    entiryAIsButtomOfEntityB
+  },
+  )
   // if any are true, there is a intersection
-  return (cond1 || cond2 || cond3 || cond4)
+  return (entityAIsLeftOfEntityB || entiryAIsTopOfEntityB || entiryAIsRightOfEntityB || entiryAIsButtomOfEntityB)
 }
 
 function checkPlayerPlatformCollision(state: Game) {
@@ -40,8 +47,8 @@ function checkPlayerPlatformCollision(state: Game) {
     const playerBounds = getBounds({ entity: player });
     for (const platform of state.platforms) {
       const platformBounds = getBounds({ entity: platform });
-      console.log(player.position, platform.position)
-      console.log(playerBounds, platformBounds)
+      // console.log(player.position, platform.position)
+      // console.log(playerBounds, platformBounds)
       // check intersection
       if (checkForIntersection({ entityA: playerBounds, entityB: platformBounds })) {
       } else {
