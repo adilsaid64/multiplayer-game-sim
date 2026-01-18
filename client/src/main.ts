@@ -1,45 +1,40 @@
 import { DELTA_T } from '../../packages/game/constants';
-import { Platform, Player, Game } from '../../packages/game/entities';
+import { Platform, Player, Game, Entity } from '../../packages/game/entities';
 import { update } from '../../packages/game/update';
-
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 canvas.height = 500
 canvas.width = 500
 
+function renderEntity(entity: Entity, color: string) {
+  ctx.fillStyle = color;
+  ctx.fillRect(
+    entity.position.x - entity.size.x / 2,
+    canvas.height - (entity.position.y + entity.size.y / 2),
+    entity.size.x,
+    entity.size.y
+  );
+}
+
 function render(game: Game) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  ctx.fillStyle = 'blue';
   for (const platform of game.platforms) {
-    ctx.fillRect(
-      platform.position.x,
-      canvas.height - platform.position.y,
-      platform.size.x,
-      platform.size.y
-    );
+    renderEntity(platform, 'blue')
   }
 
-  ctx.fillStyle = 'red';
   for (const player of game.players) {
-    ctx.fillRect(
-      player.position.x,
-      canvas.height - player.position.y,
-      player.size.x,
-      player.size.y
-    );
+    renderEntity(player, 'red')
   }
 }
-
-
 
 let tPrev = performance.now();
 let sumDeltaT = 0;
 
 const player = new Player({
   startingPosition: {
-    x: 0, y: 500
+    x: 50, y: 510
   },
   size: { x: 20, y: 20 },
 });
