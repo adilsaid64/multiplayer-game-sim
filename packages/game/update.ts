@@ -31,13 +31,13 @@ function checkForIntersection(args: CheckForIntersectionArgs): boolean {
   const entiryAIsTopOfEntityB = args.entityA.bottom > args.entityB.top
   const entiryAIsRightOfEntityB = args.entityA.left > args.entityB.right
   const entiryAIsButtomOfEntityB = args.entityA.top < args.entityB.bottom
-  console.log({
-    entityAIsLeftOfEntityB,
-    entiryAIsTopOfEntityB,
-    entiryAIsRightOfEntityB,
-    entiryAIsButtomOfEntityB
-  },
-  )
+  // console.log({
+  //   entityAIsLeftOfEntityB,
+  //   entiryAIsTopOfEntityB,
+  //   entiryAIsRightOfEntityB,
+  //   entiryAIsButtomOfEntityB
+  // },
+  // )
   // if any are true, there is a intersection
   return !(entityAIsLeftOfEntityB || entiryAIsTopOfEntityB || entiryAIsRightOfEntityB || entiryAIsButtomOfEntityB)
 }
@@ -49,10 +49,10 @@ function checkPlayerPlatformCollision(state: Game) {
       const platformBounds = getBounds({ entity: platform });
       // check intersection
       if (checkForIntersection({ entityA: playerBounds, entityB: platformBounds })) {
-        console.log('collision found!')
-        player.velocity = { ...{ x: 0, y: 0 } }
+        // console.log('collision found!')
+        player.velocity.y = 0;
       } else {
-        console.log('no collision')
+        // console.log('no collision')
       }
     }
   }
@@ -69,6 +69,7 @@ function updateGravity(dt: number, state: Game) {
     player.velocity.y += GRAVITY * dt;
   }
 }
+
 export function update(dt: number, state: Game) {
   updateGravity(dt / 1000, state)
   checkPlayerPlatformCollision(state)
