@@ -61,6 +61,7 @@ function checkPlayerPlatformCollision(state: Game) {
 function updatePosition(dt: number, state: Game) {
   for (const player of state.players) {
     player.position.y += player.velocity.y * dt;
+    player.position.x += player.velocity.x * dt;
   }
 }
 

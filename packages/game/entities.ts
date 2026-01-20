@@ -1,3 +1,5 @@
+import { PLAYER_MOVE_SPEED } from "./constants";
+
 interface Vector2D {
   x: number;
   y: number;
@@ -24,6 +26,12 @@ export class Player extends Entity {
   constructor(args: PlayerArgs) {
     super(args.startingPosition, args.size);
     this.velocity = { x: 0, y: 0 };
+  }
+  moveRight(dt: number) {
+    this.velocity.x += PLAYER_MOVE_SPEED * dt;
+  }
+  moveLeft(dt: number) {
+    this.velocity.x -= PLAYER_MOVE_SPEED * dt;
   }
 }
 

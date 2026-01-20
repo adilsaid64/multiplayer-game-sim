@@ -51,6 +51,32 @@ const game = new Game({
   platforms: [platform],
 });
 
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'd') {
+    player.moveRight(DELTA_T)
+  }
+})
+
+document.addEventListener('keyup', (event) => {
+  if (event.key === 'd') {
+    console.log('key up')
+    player.velocity.x = 0;
+  }
+})
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'a') {
+    player.moveLeft(DELTA_T)
+  }
+})
+
+document.addEventListener('keyup', (event) => {
+  if (event.key === 'a') {
+    console.log('key up')
+    player.velocity.x = 0;
+  }
+})
 function gameLoop(tNow: number) {
   const tDiff = tNow - tPrev;
   tPrev = tNow;
