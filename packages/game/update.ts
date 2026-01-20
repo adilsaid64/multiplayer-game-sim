@@ -49,8 +49,10 @@ function checkPlayerPlatformCollision(state: Game) {
       const platformBounds = getBounds({ entity: platform });
       // check intersection
       if (checkForIntersection({ entityA: playerBounds, entityB: platformBounds })) {
-        // console.log('collision found!')
-        player.velocity.y = 0;
+        player.isGrounded = true;
+        if (player.velocity.y < 0) {
+          player.velocity.y = 0;
+        }
       } else {
         // console.log('no collision')
       }

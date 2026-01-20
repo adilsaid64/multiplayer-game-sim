@@ -1,4 +1,4 @@
-import { PLAYER_MOVE_SPEED } from "./constants";
+import { JUMP_HEIGHT, PLAYER_MOVE_SPEED } from "./constants";
 
 interface Vector2D {
   x: number;
@@ -22,16 +22,26 @@ interface PlayerArgs {
 
 export class Player extends Entity {
   velocity: Vector2D;
+  isGrounded: boolean;
 
   constructor(args: PlayerArgs) {
     super(args.startingPosition, args.size);
     this.velocity = { x: 0, y: 0 };
+    this.isGrounded = false;
   }
   moveRight(dt: number) {
-    this.velocity.x += PLAYER_MOVE_SPEED * dt;
+    this.velocity.x = PLAYER_MOVE_SPEED * dt;
   }
   moveLeft(dt: number) {
-    this.velocity.x -= PLAYER_MOVE_SPEED * dt;
+    this.velocity.x = -PLAYER_MOVE_SPEED * dt;
+  }
+  jump(dt: number) {
+    if (this.isGrounded) {
+      this.velocity.y = JUMP_HEIGHT * dt;
+      this.isGrounded = false;
+    } else {
+      // do nothing
+    }
   }
 }
 

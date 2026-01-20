@@ -39,18 +39,25 @@ const player = new Player({
   size: { x: 20, y: 20 },
 });
 
-const platform = new Platform({
+const platform1 = new Platform({
   position: {
     x: 250, y: 250,
   },
   size: { x: 300, y: 20 },
 });
 
-const game = new Game({
-  players: [player],
-  platforms: [platform],
+
+const platform2 = new Platform({
+  position: {
+    x: 400, y: 300,
+  },
+  size: { x: 100, y: 20 },
 });
 
+const game = new Game({
+  players: [player],
+  platforms: [platform1, platform2],
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'd') {
@@ -60,7 +67,6 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('keyup', (event) => {
   if (event.key === 'd') {
-    console.log('key up')
     player.velocity.x = 0;
   }
 })
@@ -73,10 +79,16 @@ document.addEventListener('keydown', (event) => {
 
 document.addEventListener('keyup', (event) => {
   if (event.key === 'a') {
-    console.log('key up')
     player.velocity.x = 0;
   }
 })
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'w') {
+    player.jump(DELTA_T)
+  }
+})
+
 function gameLoop(tNow: number) {
   const tDiff = tNow - tPrev;
   tPrev = tNow;
