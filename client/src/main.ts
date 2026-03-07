@@ -4,8 +4,8 @@ import { update } from '../../packages/game/update';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
-canvas.height = 500
-canvas.width = 500
+canvas.height = 500;
+canvas.width = 500;
 
 function renderEntity(entity: Entity, color: string) {
   ctx.fillStyle = color;
@@ -21,11 +21,11 @@ function render(game: Game) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (const platform of game.platforms) {
-    renderEntity(platform, 'blue')
+    renderEntity(platform, 'blue');
   }
 
   for (const player of game.players) {
-    renderEntity(player, 'red')
+    renderEntity(player, 'red');
   }
 }
 
@@ -34,22 +34,24 @@ let sumDeltaT = 0;
 
 const player = new Player({
   startingPosition: {
-    x: 250, y: 510
+    x: 250,
+    y: 510,
   },
   size: { x: 20, y: 20 },
 });
 
 const platform1 = new Platform({
   position: {
-    x: 250, y: 250,
+    x: 250,
+    y: 250,
   },
   size: { x: 300, y: 20 },
 });
 
-
 const platform2 = new Platform({
   position: {
-    x: 400, y: 300,
+    x: 400,
+    y: 300,
   },
   size: { x: 100, y: 20 },
 });
@@ -61,33 +63,33 @@ const game = new Game({
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'd') {
-    player.moveRight(DELTA_T)
+    player.moveRight(DELTA_T);
   }
-})
+});
 
 document.addEventListener('keyup', (event) => {
   if (event.key === 'd') {
     player.velocity.x = 0;
   }
-})
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'a') {
-    player.moveLeft(DELTA_T)
+    player.moveLeft(DELTA_T);
   }
-})
+});
 
 document.addEventListener('keyup', (event) => {
   if (event.key === 'a') {
     player.velocity.x = 0;
   }
-})
+});
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'w') {
-    player.jump(DELTA_T)
+    player.jump(DELTA_T);
   }
-})
+});
 
 function gameLoop(tNow: number) {
   const tDiff = tNow - tPrev;
