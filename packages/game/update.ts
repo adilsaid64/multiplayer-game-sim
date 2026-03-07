@@ -31,14 +31,6 @@ function checkForIntersection(args: CheckForIntersectionArgs): boolean {
   const entiryAIsTopOfEntityB = args.entityA.bottom > args.entityB.top
   const entiryAIsRightOfEntityB = args.entityA.left > args.entityB.right
   const entiryAIsButtomOfEntityB = args.entityA.top < args.entityB.bottom
-  // console.log({
-  //   entityAIsLeftOfEntityB,
-  //   entiryAIsTopOfEntityB,
-  //   entiryAIsRightOfEntityB,
-  //   entiryAIsButtomOfEntityB
-  // },
-  // )
-  // if any are true, there is a intersection
   return !(entityAIsLeftOfEntityB || entiryAIsTopOfEntityB || entiryAIsRightOfEntityB || entiryAIsButtomOfEntityB)
 }
 

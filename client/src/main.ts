@@ -29,6 +29,14 @@ function render(game: Game) {
   }
 }
 
+function renderPlayerPosition(player: Player) {
+  ctx.fillStyle = 'white';
+  ctx.font = '16px Arial';
+
+  const text = `Player: x=${player.position.x.toFixed(1)} y=${player.position.y.toFixed(1)}`;
+  ctx.fillText(text, 10, 20);
+}
+
 let tPrev = performance.now();
 let sumDeltaT = 0;
 
@@ -56,9 +64,17 @@ const platform2 = new Platform({
   size: { x: 100, y: 20 },
 });
 
+const platform3 = new Platform({
+  position: {
+    x: 100,
+    y: 340,
+  },
+  size: { x: 20, y: 100 },
+});
+
 const game = new Game({
   players: [player],
-  platforms: [platform1, platform2],
+  platforms: [platform1, platform2, platform3],
 });
 
 document.addEventListener('keydown', (event) => {
@@ -100,6 +116,7 @@ function gameLoop(tNow: number) {
     sumDeltaT -= DELTA_T;
   }
   render(game);
+  renderPlayerPosition(game.players[0])
   requestAnimationFrame(gameLoop);
 }
 requestAnimationFrame(gameLoop);
