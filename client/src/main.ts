@@ -31,10 +31,20 @@ function render(game: Game) {
 
 function renderPlayerPosition(player: Player) {
   ctx.fillStyle = 'white';
-  ctx.font = '16px Arial';
+  ctx.font = '14px Arial';
 
-  const text = `Player: x=${player.position.x.toFixed(1)} y=${player.position.y.toFixed(1)}`;
-  ctx.fillText(text, 10, 20);
+  const posTxt = `Player Pos: x=${player.position.x.toFixed(1)} y=${player.position.y.toFixed(1)}`;
+  ctx.fillText(posTxt, 10, 20);
+
+  const groundedTxt = `Player: isGrounded=${player.isGrounded}`;
+  ctx.fillText(groundedTxt, 10, 40);
+
+  const collisionTxt = `Player: collBottom=${player.collBottom} collTop=${player.collTop}  collLeft=${player.collLeft} collRight=${player.collRight} `;
+  ctx.fillText(collisionTxt, 10, 60);
+
+
+  const velTxt = `Player Vel: x=${player.velocity.x.toFixed(1)} y=${player.velocity.y.toFixed(1)}`;
+  ctx.fillText(velTxt, 10, 80);
 }
 
 let tPrev = performance.now();

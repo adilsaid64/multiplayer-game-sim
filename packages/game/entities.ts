@@ -8,10 +8,18 @@ interface Vector2D {
 export class Entity {
   position: Vector2D;
   size: Vector2D;
+  collRight: boolean
+  collLeft: boolean
+  collTop: boolean
+  collBottom: boolean
 
   constructor(position: Vector2D, size: Vector2D) {
     this.position = { ...position };
     this.size = { ...size };
+    this.collRight = false
+    this.collLeft = false
+    this.collTop = false
+    this.collBottom = false
   }
 }
 
