@@ -26,25 +26,35 @@ interface CheckForIntersectionArgs {
   entityA: AABB
   entityB: AABB
 }
-function checkForIntersection(args: CheckForIntersectionArgs): boolean {
+// core idea, no intersection if any are true
+// if non are true, there is an intersection
+function checkForIntersection(args: CheckForIntersectionArgs) {
   const entityAIsLeftOfEntityB = args.entityA.right < args.entityB.left
   const entiryAIsTopOfEntityB = args.entityA.bottom > args.entityB.top
   const entiryAIsRightOfEntityB = args.entityA.left > args.entityB.right
   const entiryAIsButtomOfEntityB = args.entityA.top < args.entityB.bottom
-  return !(entityAIsLeftOfEntityB || entiryAIsTopOfEntityB || entiryAIsRightOfEntityB || entiryAIsButtomOfEntityB)
+  return {
+    entityAIsLeftOfEntityB, entiryAIsTopOfEntityB, entiryAIsRightOfEntityB, entiryAIsButtomOfEntityB
+  }
 }
 
 function checkPlayerPlatformCollision(state: Game) {
-  for (const player of state.players) {
+  for (const player of state.players) {// n players
     const playerBounds = getBounds({ entity: player });
-    for (const platform of state.platforms) {
+    for (const platform of state.platforms) { // m platforms
       const platformBounds = getBounds({ entity: platform });
+      const intersection = checkForIntersection({ entityA: playerBounds, entityB: platformBounds })
+      console.log(intersection)
       // check intersection
-      if (checkForIntersection({ entityA: playerBounds, entityB: platformBounds })) {
+      if (!(intersection.entityAIsLeftOfEntityB || intersection.entiryAIsTopOfEntityB || intersection.entiryAIsRightOfEntityB || intersection.entiryAIsButtomOfEntityB)) {
+        // there is an intersection
+
+        // checking if the player is falling, if they are falling, set y velocity to 0
         if (player.velocity.y < 0) {
           player.velocity.y = 0;
           player.isGrounded = true;
         }
+
       } else {
         // console.log('no collision')
       }
