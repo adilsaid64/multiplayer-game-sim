@@ -37,20 +37,6 @@ export class Player extends Entity {
     this.velocity = { x: 0, y: 0 };
     this.isGrounded = false;
   }
-  moveRight(dt: number) {
-    this.velocity.x = PLAYER_MOVE_SPEED * dt;
-  }
-  moveLeft(dt: number) {
-    this.velocity.x = -PLAYER_MOVE_SPEED * dt;
-  }
-  jump(dt: number) {
-    if (this.isGrounded) {
-      this.velocity.y = JUMP_HEIGHT * dt;
-      this.isGrounded = false;
-    } else {
-      // do nothing
-    }
-  }
 }
 
 interface PlatformArgs {
