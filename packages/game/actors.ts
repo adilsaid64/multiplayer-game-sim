@@ -32,7 +32,26 @@ type JumpMessage = {
 };
 
 export type PlayerActorMessage = MoveMessage | JumpMessage;
+    protected abstract receive(message: M): void;
+}
 
+type MoveMessage = {
+  type: "move";
+  direction: "left" | "right";
+  dt: number;
+};
+
+type JumpMessage = {
+  type: "jump";
+  dt: number;
+};
+
+export type PlayerActorMessage = MoveMessage | JumpMessage;
+
+export class PlayerActor extends Actor<PlayerActorMessage> {
+    private player: Player;
+
+    constructor(player: Player) {
 export class PlayerActor extends Actor<PlayerActorMessage> {
     private player: Player;
 
@@ -45,7 +64,7 @@ export class PlayerActor extends Actor<PlayerActorMessage> {
         switch (message.type) {
             case "move":
                 if (message.direction === "right") {
-                this.player.velocity.x = PLAYER_MOVE_SPEED * message.dt;
+                    this.player.velocity.x = PLAYER_MOVE_SPEED * message.dt;
                 } else {
                 this.player.velocity.x = -PLAYER_MOVE_SPEED * message.dt;
                 }
@@ -53,8 +72,8 @@ export class PlayerActor extends Actor<PlayerActorMessage> {
 
             case "jump":
                 if (this.player.isGrounded) {
-                this.player.velocity.y = JUMP_HEIGHT * message.dt;
-                this.player.isGrounded = false;
+                    this.player.velocity.y = JUMP_HEIGHT * message.dt;
+                    this.player.isGrounded = false;
                 }
             break;
         }
