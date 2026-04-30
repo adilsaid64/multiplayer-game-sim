@@ -36,7 +36,7 @@ export class Player extends Entity {
     super(args.startingPosition, args.size);
     this.velocity = { x: 0, y: 0 };
     this.isGrounded = false;
-  }
+  } 
 }
 
 interface PlatformArgs {
