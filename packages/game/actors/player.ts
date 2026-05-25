@@ -1,39 +1,6 @@
-import { Player } from "./entities";
-import { JUMP_HEIGHT, PLAYER_MOVE_SPEED } from "./constants";
-
-abstract class Actor<M extends { type: string }> {
-    private mailbox: M[] = [];
-
-    send(message: M) {
-        this.mailbox.push(message);
-    }
-
-    process() {
-        while (this.mailbox.length > 0) {
-            const message = this.mailbox.shift();
-            if (message) {
-                this.receive(message);
-            }
-        }
-    }
-
-    protected abstract receive(message: M): void;
-}
-
-type MoveMessage = {
-  type: "move";
-  direction: "left" | "right";
-  dt: number;
-};
-
-type JumpMessage = {
-  type: "jump";
-  dt: number;
-};
-
-export type PlayerActorMessage = MoveMessage | JumpMessage;
-    protected abstract receive(message: M): void;
-}
+import { JUMP_HEIGHT, PLAYER_MOVE_SPEED } from "../constants";
+import { Player } from "../entities";
+import { Actor } from "./actors";
 
 type MoveMessage = {
   type: "move";
@@ -48,10 +15,6 @@ type JumpMessage = {
 
 export type PlayerActorMessage = MoveMessage | JumpMessage;
 
-export class PlayerActor extends Actor<PlayerActorMessage> {
-    private player: Player;
-
-    constructor(player: Player) {
 export class PlayerActor extends Actor<PlayerActorMessage> {
     private player: Player;
 
