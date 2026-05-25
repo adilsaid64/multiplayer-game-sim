@@ -1,5 +1,3 @@
-import { JUMP_HEIGHT, PLAYER_MOVE_SPEED } from "./constants";
-
 interface Vector2D {
   x: number;
   y: number;

@@ -9,6 +9,9 @@
     "preview": "vite preview",
     "format": "prettier --write ."
   },
+  "dependencies": {
+    "@multiplayer-game-sim/game": "workspace:*"
+  },
   "devDependencies": {
     "prettier": "^3.7.4",
     "typescript": "~5.9.3",

@@ -2,6 +2,7 @@
   "name": "multiplayer-game-sim",
   "private": true,
   "scripts": {
+    "dev": "pnpm --filter client dev",
     "lint": "eslint ."
   },
   "devDependencies": {

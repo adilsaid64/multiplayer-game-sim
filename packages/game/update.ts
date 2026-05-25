@@ -1,5 +1,5 @@
 import { GRAVITY } from "./constants";
-import { Entity, Player, type Game } from "./entities";
+import { Entity, type Game } from "./entities";
 
 interface GetBoundsArgs {
   entity: Entity

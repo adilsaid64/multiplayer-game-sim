@@ -13,7 +13,11 @@ type JumpMessage = {
   dt: number;
 };
 
-export type PlayerActorMessage = MoveMessage | JumpMessage;
+type StopMessage = {
+  type: "stop";
+};
+
+export type PlayerActorMessage = MoveMessage | JumpMessage | StopMessage;
 
 export class PlayerActor extends Actor<PlayerActorMessage> {
     private player: Player;
@@ -38,6 +42,10 @@ export class PlayerActor extends Actor<PlayerActorMessage> {
                     this.player.velocity.y = JUMP_HEIGHT * message.dt;
                     this.player.isGrounded = false;
                 }
+            break;
+
+            case "stop":
+                this.player.velocity.x = 0;
             break;
         }
     }

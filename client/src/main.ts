@@ -1,6 +1,12 @@
-import { DELTA_T } from '../../packages/game/constants';
-import { Platform, Player, Game, Entity } from '../../packages/game/entities';
-import { update } from '../../packages/game/update';
+import {
+  DELTA_T,
+  Entity,
+  Game,
+  Platform,
+  Player,
+  PlayerActor,
+  World,
+} from '@multiplayer-game-sim/game';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
@@ -42,7 +48,6 @@ function renderPlayerPosition(player: Player) {
   const collisionTxt = `Player: collBottom=${player.collBottom} collTop=${player.collTop}  collLeft=${player.collLeft} collRight=${player.collRight} `;
   ctx.fillText(collisionTxt, 10, 60);
 
-
   const velTxt = `Player Vel: x=${player.velocity.x.toFixed(1)} y=${player.velocity.y.toFixed(1)}`;
   ctx.fillText(velTxt, 10, 80);
 }
@@ -58,6 +63,7 @@ const player = new Player({
   size: { x: 20, y: 20 },
 });
 
+const playerActor = new PlayerActor(player);
 const platform1 = new Platform({
   position: {
     x: 250,
@@ -66,54 +72,35 @@ const platform1 = new Platform({
   size: { x: 300, y: 20 },
 });
 
-const platform2 = new Platform({
-  position: {
-    x: 400,
-    y: 300,
-  },
-  size: { x: 100, y: 20 },
-});
-
-const platform3 = new Platform({
-  position: {
-    x: 100,
-    y: 340,
-  },
-  size: { x: 20, y: 100 },
-});
-
 const game = new Game({
   players: [player],
-  platforms: [platform1, platform2, platform3],
+  platforms: [platform1],
 });
+
+const world = new World(game);
+world.addActor(playerActor);
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'd') {
-    player.moveRight(DELTA_T);
+    playerActor.send({ type: 'move', direction: 'right', dt: DELTA_T });
   }
 });
 
 document.addEventListener('keyup', (event) => {
-  if (event.key === 'd') {
-    player.velocity.x = 0;
+  if (event.key === 'd' || event.key === 'a') {
+    playerActor.send({ type: 'stop' });
   }
 });
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'a') {
-    player.moveLeft(DELTA_T);
-  }
-});
-
-document.addEventListener('keyup', (event) => {
-  if (event.key === 'a') {
-    player.velocity.x = 0;
+    playerActor.send({ type: 'move', direction: 'left', dt: DELTA_T });
   }
 });
 
 document.addEventListener('keydown', (event) => {
   if (event.key === 'w') {
-    player.jump(DELTA_T);
+    playerActor.send({ type: 'jump', dt: DELTA_T });
   }
 });
 
@@ -122,11 +109,11 @@ function gameLoop(tNow: number) {
   tPrev = tNow;
   sumDeltaT += tDiff;
   while (sumDeltaT >= DELTA_T) {
-    update(DELTA_T, game);
+    world.step(DELTA_T);
     sumDeltaT -= DELTA_T;
   }
   render(game);
-  renderPlayerPosition(game.players[0])
+  renderPlayerPosition(game.players[0]);
   requestAnimationFrame(gameLoop);
 }
 requestAnimationFrame(gameLoop);
