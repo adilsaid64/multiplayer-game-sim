@@ -14,10 +14,11 @@ export class World {
     this.actors.push(actor);
   }
 
-  step(dt: number) {
+  step(dtMs: number) {
+    const dtSec = dtMs / 1000;
     for (const actor of this.actors) {
       actor.process();
     }
-    update(dt, this.game);
+    update(dtSec, this.game);
   }
 }

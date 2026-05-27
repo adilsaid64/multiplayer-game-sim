@@ -71,37 +71,50 @@ const platform1 = new Platform({
   },
   size: { x: 300, y: 20 },
 });
-
+const platform2 = new Platform({
+  position: {
+    x: 100,
+    y: 300,
+  },
+  size: { x: 100, y: 20 },
+});
 const game = new Game({
   players: [player],
-  platforms: [platform1],
+  platforms: [platform1, platform2],
 });
 
 const world = new World(game);
 world.addActor(playerActor);
 
+const keysHeld = new Set<string>();
+
+function syncMovementInput() {
+  const left = keysHeld.has('a');
+  const right = keysHeld.has('d');
+
+  if (left && !right) {
+    playerActor.send({ type: 'move', direction: 'left' });
+  } else if (right && !left) {
+    playerActor.send({ type: 'move', direction: 'right' });
+  } else {
+    playerActor.send({ type: 'stop' });
+  }
+}
+
 document.addEventListener('keydown', (event) => {
-  if (event.key === 'd') {
-    playerActor.send({ type: 'move', direction: 'right', dt: DELTA_T });
+  if (event.repeat) {
+    return;
+  }
+
+  keysHeld.add(event.key);
+
+  if (event.key === 'w') {
+    playerActor.send({ type: 'jump' });
   }
 });
 
 document.addEventListener('keyup', (event) => {
-  if (event.key === 'd' || event.key === 'a') {
-    playerActor.send({ type: 'stop' });
-  }
-});
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'a') {
-    playerActor.send({ type: 'move', direction: 'left', dt: DELTA_T });
-  }
-});
-
-document.addEventListener('keydown', (event) => {
-  if (event.key === 'w') {
-    playerActor.send({ type: 'jump', dt: DELTA_T });
-  }
+  keysHeld.delete(event.key);
 });
 
 function gameLoop(tNow: number) {
@@ -109,6 +122,7 @@ function gameLoop(tNow: number) {
   tPrev = tNow;
   sumDeltaT += tDiff;
   while (sumDeltaT >= DELTA_T) {
+    syncMovementInput();
     world.step(DELTA_T);
     sumDeltaT -= DELTA_T;
   }

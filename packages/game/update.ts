@@ -1,63 +1,77 @@
-import { GRAVITY } from "./constants";
-import { Entity, type Game } from "./entities";
-
-interface GetBoundsArgs {
-  entity: Entity
-}
+import { GRAVITY } from './constants';
+import { Entity, type Game } from './entities';
 
 interface AABB {
-  left: number
-  right: number
-  top: number
-  bottom: number
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
 }
 
-function getBounds(args: GetBoundsArgs): AABB {
-  const bounds: AABB = {
-    top: args.entity.position.y + args.entity.size.y / 2,
-    bottom: args.entity.position.y - args.entity.size.y / 2,
-    left: args.entity.position.x - args.entity.size.x / 2,
-    right: args.entity.position.x + args.entity.size.x / 2,
-  }
-  return bounds
-}
-
-interface CheckForIntersectionArgs {
-  entityA: AABB
-  entityB: AABB
-}
-// core idea, no intersection if any are true
-// if non are true, there is an intersection
-function checkForIntersection(args: CheckForIntersectionArgs) {
-  const entityAIsLeftOfEntityB = args.entityA.right < args.entityB.left
-  const entiryAIsTopOfEntityB = args.entityA.bottom > args.entityB.top
-  const entiryAIsRightOfEntityB = args.entityA.left > args.entityB.right
-  const entiryAIsButtomOfEntityB = args.entityA.top < args.entityB.bottom
+function getBounds(entity: Entity): AABB {
   return {
-    entityAIsLeftOfEntityB, entiryAIsTopOfEntityB, entiryAIsRightOfEntityB, entiryAIsButtomOfEntityB
+    top: entity.position.y + entity.size.y / 2,
+    bottom: entity.position.y - entity.size.y / 2,
+    left: entity.position.x - entity.size.x / 2,
+    right: entity.position.x + entity.size.x / 2,
+  };
+}
+
+function aabbOverlap(a: AABB, b: AABB): boolean {
+  return a.left < b.right && a.right > b.left && a.bottom < b.top && a.top > b.bottom;
+}
+
+function resetCollisionFlags(state: Game) {
+  for (const player of state.players) {
+    player.collLeft = false;
+    player.collRight = false;
+    player.collTop = false;
+    player.collBottom = false;
+    player.isGrounded = false;
   }
 }
 
-function checkPlayerPlatformCollision(state: Game) {
-  for (const player of state.players) {// n players
-    const playerBounds = getBounds({ entity: player });
-    for (const platform of state.platforms) { // m platforms
-      const platformBounds = getBounds({ entity: platform });
-      const intersection = checkForIntersection({ entityA: playerBounds, entityB: platformBounds })
-      console.log(intersection)
-      // check intersection
-      if (!(intersection.entityAIsLeftOfEntityB || intersection.entiryAIsTopOfEntityB || intersection.entiryAIsRightOfEntityB || intersection.entiryAIsButtomOfEntityB)) {
-        // there is an intersection
+function resolvePlayerPlatformCollisions(state: Game) {
+  for (const player of state.players) {
+    let playerBounds = getBounds(player);
 
-        // checking if the player is falling, if they are falling, set y velocity to 0
-        if (player.velocity.y < 0) {
-          player.velocity.y = 0;
-          player.isGrounded = true;
-        }
-
-      } else {
-        // console.log('no collision')
+    for (const platform of state.platforms) {
+      const platformBounds = getBounds(platform);
+      if (!aabbOverlap(playerBounds, platformBounds)) {
+        continue;
       }
+
+      const overlapLeft = playerBounds.right - platformBounds.left;
+      const overlapRight = platformBounds.right - playerBounds.left;
+      const overlapBottom = playerBounds.top - platformBounds.bottom;
+      const overlapTop = platformBounds.top - playerBounds.bottom;
+      const minOverlap = Math.min(
+        overlapLeft,
+        overlapRight,
+        overlapBottom,
+        overlapTop
+      );
+
+      if (minOverlap === overlapTop && player.velocity.y <= 0) {
+        player.position.y = platformBounds.top + player.size.y / 2;
+        player.velocity.y = 0;
+        player.isGrounded = true;
+        player.collBottom = true;
+      } else if (minOverlap === overlapBottom && player.velocity.y > 0) {
+        player.position.y = platformBounds.bottom - player.size.y / 2;
+        player.velocity.y = 0;
+        player.collTop = true;
+      } else if (minOverlap === overlapLeft) {
+        player.position.x = platformBounds.left - player.size.x / 2;
+        player.velocity.x = 0;
+        player.collLeft = true;
+      } else if (minOverlap === overlapRight) {
+        player.position.x = platformBounds.right + player.size.x / 2;
+        player.velocity.x = 0;
+        player.collRight = true;
+      }
+
+      playerBounds = getBounds(player);
     }
   }
 }
@@ -76,7 +90,8 @@ function updateGravity(dt: number, state: Game) {
 }
 
 export function update(dt: number, state: Game) {
-  updateGravity(dt / 1000, state)
-  checkPlayerPlatformCollision(state)
-  updatePosition(dt / 1000, state)
+  updateGravity(dt, state);
+  updatePosition(dt, state);
+  resetCollisionFlags(state);
+  resolvePlayerPlatformCollisions(state);
 }
