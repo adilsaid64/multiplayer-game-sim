@@ -22,19 +22,22 @@ export class Entity {
 }
 
 interface PlayerArgs {
+  id: string;
   startingPosition: Vector2D;
   size: Vector2D;
 }
 
 export class Player extends Entity {
+  id: string;
   velocity: Vector2D;
   isGrounded: boolean;
 
   constructor(args: PlayerArgs) {
     super(args.startingPosition, args.size);
+    this.id = args.id;
     this.velocity = { x: 0, y: 0 };
     this.isGrounded = false;
-  } 
+  }
 }
 
 interface PlatformArgs {

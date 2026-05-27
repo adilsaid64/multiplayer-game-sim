@@ -2,16 +2,26 @@ import {
   DELTA_T,
   Entity,
   Game,
-  Platform,
   Player,
-  PlayerActor,
-  World,
+  applyWorldSnapshot,
+  createGameFromLevel,
+  type ClientInputMessage,
+  type PlayerActorMessage,
+  type ServerMessage,
 } from '@multiplayer-game-sim/game';
+
+const SERVER_URL = 'ws://localhost:8080';
 
 const canvas = document.getElementById('game') as HTMLCanvasElement;
 const ctx = canvas.getContext('2d')!;
 canvas.height = 500;
 canvas.width = 500;
+
+const PLAYER_COLORS = ['#ef4444', '#22c55e', '#eab308', '#a855f7', '#06b6d4'];
+
+function colorForPlayer(index: number): string {
+  return PLAYER_COLORS[index % PLAYER_COLORS.length];
+}
 
 function renderEntity(entity: Entity, color: string) {
   ctx.fillStyle = color;
@@ -23,82 +33,110 @@ function renderEntity(entity: Entity, color: string) {
   );
 }
 
-function render(game: Game) {
+function renderPlayerId(player: Player, isLocal: boolean) {
+  ctx.fillStyle = isLocal ? '#ffffff' : '#e5e7eb';
+  ctx.font = '11px monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText(
+    player.id.slice(0, 8),
+    player.position.x,
+    canvas.height - (player.position.y + player.size.y / 2) - 6
+  );
+  ctx.textAlign = 'left';
+}
+
+function render(game: Game, localPlayerId: string | null) {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   for (const platform of game.platforms) {
-    renderEntity(platform, 'blue');
+    renderEntity(platform, '#3b82f6');
   }
 
-  for (const player of game.players) {
-    renderEntity(player, 'red');
-  }
+  game.players.forEach((player, index) => {
+    const color =
+      player.id === localPlayerId ? '#ffffff' : colorForPlayer(index);
+    renderEntity(player, color);
+    renderPlayerId(player, player.id === localPlayerId);
+  });
 }
 
-function renderPlayerPosition(player: Player) {
+function renderHud(localPlayer: Player | undefined, connected: boolean) {
   ctx.fillStyle = 'white';
   ctx.font = '14px Arial';
 
-  const posTxt = `Player Pos: x=${player.position.x.toFixed(1)} y=${player.position.y.toFixed(1)}`;
-  ctx.fillText(posTxt, 10, 20);
+  const statusTxt = connected ? 'Connected to server' : 'Connecting...';
+  ctx.fillText(statusTxt, 10, 20);
 
-  const groundedTxt = `Player: isGrounded=${player.isGrounded}`;
-  ctx.fillText(groundedTxt, 10, 40);
+  if (!localPlayer) {
+    return;
+  }
 
-  const collisionTxt = `Player: collBottom=${player.collBottom} collTop=${player.collTop}  collLeft=${player.collLeft} collRight=${player.collRight} `;
-  ctx.fillText(collisionTxt, 10, 60);
+  const posTxt = `You: x=${localPlayer.position.x.toFixed(1)} y=${localPlayer.position.y.toFixed(1)}`;
+  ctx.fillText(posTxt, 10, 40);
 
-  const velTxt = `Player Vel: x=${player.velocity.x.toFixed(1)} y=${player.velocity.y.toFixed(1)}`;
-  ctx.fillText(velTxt, 10, 80);
+  const velTxt = `Vel: x=${localPlayer.velocity.x.toFixed(1)} y=${localPlayer.velocity.y.toFixed(1)}`;
+  ctx.fillText(velTxt, 10, 60);
+
+  const groundedTxt = `Grounded: ${localPlayer.isGrounded}`;
+  ctx.fillText(groundedTxt, 10, 80);
+
+  const playersTxt = `Players online: ${game.players.length}`;
+  ctx.fillText(playersTxt, 10, 100);
 }
 
 let tPrev = performance.now();
 let sumDeltaT = 0;
 
-const player = new Player({
-  startingPosition: {
-    x: 250,
-    y: 510,
-  },
-  size: { x: 20, y: 20 },
-});
-
-const playerActor = new PlayerActor(player);
-const platform1 = new Platform({
-  position: {
-    x: 250,
-    y: 250,
-  },
-  size: { x: 300, y: 20 },
-});
-const platform2 = new Platform({
-  position: {
-    x: 100,
-    y: 300,
-  },
-  size: { x: 100, y: 20 },
-});
-const game = new Game({
-  players: [player],
-  platforms: [platform1, platform2],
-});
-
-const world = new World(game);
-world.addActor(playerActor);
+const game = createGameFromLevel();
+let localPlayerId: string | null = null;
+let connected = false;
 
 const keysHeld = new Set<string>();
+let jumpQueued = false;
 
-function syncMovementInput() {
+const socket = new WebSocket(SERVER_URL);
+
+socket.addEventListener('open', () => {
+  connected = true;
+});
+
+socket.addEventListener('close', () => {
+  connected = false;
+});
+
+socket.addEventListener('message', (event) => {
+  const message = JSON.parse(String(event.data)) as ServerMessage;
+
+  if (message.type === 'welcome') {
+    localPlayerId = message.playerId;
+    return;
+  }
+
+  if (message.type === 'snapshot') {
+    applyWorldSnapshot(game, message);
+  }
+});
+
+function sendInput(input: PlayerActorMessage) {
+  if (socket.readyState !== WebSocket.OPEN) {
+    return;
+  }
+
+  const message: ClientInputMessage = { type: 'input', input };
+  socket.send(JSON.stringify(message));
+}
+
+function getMovementInput(): PlayerActorMessage {
   const left = keysHeld.has('a');
   const right = keysHeld.has('d');
 
   if (left && !right) {
-    playerActor.send({ type: 'move', direction: 'left' });
-  } else if (right && !left) {
-    playerActor.send({ type: 'move', direction: 'right' });
-  } else {
-    playerActor.send({ type: 'stop' });
+    return { type: 'move', direction: 'left' };
   }
+  if (right && !left) {
+    return { type: 'move', direction: 'right' };
+  }
+  return { type: 'stop' };
 }
 
 document.addEventListener('keydown', (event) => {
@@ -109,7 +147,7 @@ document.addEventListener('keydown', (event) => {
   keysHeld.add(event.key);
 
   if (event.key === 'w') {
-    playerActor.send({ type: 'jump' });
+    jumpQueued = true;
   }
 });
 
@@ -121,13 +159,25 @@ function gameLoop(tNow: number) {
   const tDiff = tNow - tPrev;
   tPrev = tNow;
   sumDeltaT += tDiff;
+
   while (sumDeltaT >= DELTA_T) {
-    syncMovementInput();
-    world.step(DELTA_T);
+    sendInput(getMovementInput());
+
+    if (jumpQueued) {
+      sendInput({ type: 'jump' });
+      jumpQueued = false;
+    }
+
     sumDeltaT -= DELTA_T;
   }
-  render(game);
-  renderPlayerPosition(game.players[0]);
+
+  const localPlayer = localPlayerId
+    ? game.players.find((player) => player.id === localPlayerId)
+    : undefined;
+
+  render(game, localPlayerId);
+  renderHud(localPlayer, connected);
   requestAnimationFrame(gameLoop);
 }
+
 requestAnimationFrame(gameLoop);

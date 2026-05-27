@@ -2,7 +2,9 @@
   "name": "multiplayer-game-sim",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter client dev",
+    "dev": "pnpm --parallel --filter client --filter server dev",
+    "dev:client": "pnpm --filter client dev",
+    "dev:server": "pnpm --filter server dev",
     "lint": "eslint ."
   },
   "devDependencies": {

@@ -14,6 +14,13 @@ export class World {
     this.actors.push(actor);
   }
 
+  removeActor(actor: Actor<{ type: string }>) {
+    const index = this.actors.indexOf(actor);
+    if (index >= 0) {
+      this.actors.splice(index, 1);
+    }
+  }
+
   step(dtMs: number) {
     const dtSec = dtMs / 1000;
     for (const actor of this.actors) {

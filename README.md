@@ -1,5 +1,26 @@
 # multiplayer-game-sim
 
-Experimenting with authoritative servers, client-side prediction, and reconciliation in real-time multiplayer systems
+Experimenting with authoritative servers, client-side prediction, and reconciliation in real-time multiplayer systems.
 
-I'm not really a game dev, so I might not have followed best practices of game development, but the idea behind this project is to understand how state and data flows in multiplayer systems. Also gonna take this as an opportunity to implement actor systems, since from what i've read, its seems like a good use case.
+## Run locally
+
+```bash
+pnpm install
+pnpm dev
+```
+
+This starts:
+
+- **Server** — authoritative simulation at `ws://localhost:8080`
+- **Client** — Vite dev server (open the URL it prints, usually `http://localhost:5173`)
+
+Open two browser tabs to see multiple players. The server runs `World.step()`; clients send input and render server snapshots.
+
+## Architecture (Phase 1)
+
+```
+Client: keyboard → WebSocket input → render server snapshot
+Server: collect inputs → PlayerActor → world.step() → broadcast snapshot
+```
+
+Shared game logic lives in `packages/game`.
