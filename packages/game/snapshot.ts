@@ -1,59 +1,38 @@
-import { Game, Platform, Player } from './entities';
-import type {
-  PlatformSnapshot,
-  PlayerSnapshot,
-  WorldSnapshotMessage,
-} from './messages/network';
+import type { WorldSnapshotMessage } from './messages';
+import type { Platform, Player, Vec2, World } from './types';
 
-export function serializeWorldSnapshot(game: Game): WorldSnapshotMessage {
-  return {
-    type: 'snapshot',
-    players: game.players.map(serializePlayer),
-    platforms: game.platforms.map(serializePlatform),
-  };
+function copyVec(value: Vec2): Vec2 {
+  return { x: value.x, y: value.y };
 }
 
-function serializePlayer(player: Player): PlayerSnapshot {
+function copyPlayer(player: Player): Player {
   return {
     id: player.id,
-    position: { ...player.position },
-    size: { ...player.size },
-    velocity: { ...player.velocity },
-    isGrounded: player.isGrounded,
+    position: copyVec(player.position),
+    size: copyVec(player.size),
+    velocity: copyVec(player.velocity),
+    grounded: player.grounded,
   };
 }
 
-function serializePlatform(platform: Platform): PlatformSnapshot {
+function copyPlatform(platform: Platform): Platform {
   return {
-    position: { ...platform.position },
-    size: { ...platform.size },
+    position: copyVec(platform.position),
+    size: copyVec(platform.size),
   };
 }
 
-export function applyWorldSnapshot(game: Game, snapshot: WorldSnapshotMessage) {
-  game.platforms = snapshot.platforms.map(
-    (platform) => new Platform(platform)
-  );
+export function serializeWorld(world: World): WorldSnapshotMessage {
+  return {
+    type: 'snapshot',
+    players: world.players.map(copyPlayer),
+    platforms: world.platforms.map(copyPlatform),
+  };
+}
 
-  const playersById = new Map(game.players.map((player) => [player.id, player]));
-
-  game.players = snapshot.players.map((playerSnapshot) => {
-    const existing = playersById.get(playerSnapshot.id);
-    if (existing) {
-      existing.position = { ...playerSnapshot.position };
-      existing.velocity = { ...playerSnapshot.velocity };
-      existing.isGrounded = playerSnapshot.isGrounded;
-      return existing;
-    }
-
-    const player = new Player({
-      id: playerSnapshot.id,
-      startingPosition: playerSnapshot.position,
-      size: playerSnapshot.size,
-    });
-    player.position = { ...playerSnapshot.position };
-    player.velocity = { ...playerSnapshot.velocity };
-    player.isGrounded = playerSnapshot.isGrounded;
-    return player;
-  });
+export function worldFromSnapshot(snapshot: WorldSnapshotMessage): World {
+  return {
+    players: snapshot.players.map(copyPlayer),
+    platforms: snapshot.platforms.map(copyPlatform),
+  };
 }

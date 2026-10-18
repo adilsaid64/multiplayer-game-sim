@@ -5,25 +5,18 @@ export {
   PLAYER_MOVE_SPEED,
   TARGET_FPS,
 } from './constants';
-export { Entity, Game, Platform, Player } from './entities';
-export { createGameFromLevel, removePlayer, spawnPlayer } from './level';
+export { applyInput, clearJump, idleInput, isPlayerInput, mergeInput } from './input';
+export { createWorld, removePlayer, spawnPlayer } from './level';
+export type { Level } from './level';
 export { demoLevel } from './levels/demo';
-export { update } from './update';
-export { applyWorldSnapshot, serializeWorldSnapshot } from './snapshot';
-export { World } from './world';
-export { Actor } from './actors/actors';
-export { PlayerActor, type PlayerActorMessage } from './actors/player';
-export type {
-  JumpMessage,
-  MoveMessage,
-  StopMessage,
-} from './messages/player';
+export { isClientMessage } from './messages';
 export type {
   ClientInputMessage,
   ClientMessage,
-  PlatformSnapshot,
-  PlayerSnapshot,
   ServerMessage,
   WelcomeMessage,
   WorldSnapshotMessage,
-} from './messages/network';
+} from './messages';
+export { stepPhysics } from './physics';
+export { serializeWorld, worldFromSnapshot } from './snapshot';
+export type { Platform, Player, PlayerInput, Vec2, World } from './types';

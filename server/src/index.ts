@@ -2,24 +2,27 @@ import { randomUUID } from 'node:crypto';
 import { WebSocket, WebSocketServer } from 'ws';
 import {
   DELTA_T,
-  PlayerActor,
-  World,
-  createGameFromLevel,
+  applyInput,
+  clearJump,
+  createWorld,
+  demoLevel,
+  idleInput,
+  isClientMessage,
+  mergeInput,
   removePlayer,
-  serializeWorldSnapshot,
+  serializeWorld,
   spawnPlayer,
-  type ClientMessage,
-  type PlayerActorMessage,
-  type WelcomeMessage,
+  stepPhysics,
 } from '@multiplayer-game-sim/game';
+import type { Player, PlayerInput, World } from '@multiplayer-game-sim/game';
 
 const PORT = 8080;
 
 type ClientConnection = {
   id: string;
   socket: WebSocket;
-  actor: PlayerActor;
-  pendingInputs: PlayerActorMessage[];
+  player: Player;
+  input: PlayerInput;
 };
 
 class GameServer {
@@ -27,72 +30,63 @@ class GameServer {
   private readonly clients = new Map<string, ClientConnection>();
 
   constructor() {
-    this.world = new World(createGameFromLevel());
+    this.world = createWorld(demoLevel);
   }
 
   addClient(socket: WebSocket): string {
     const id = randomUUID();
-    const player = spawnPlayer(this.world.game, id, this.clients.size);
-    const actor = new PlayerActor(player);
-    this.world.addActor(actor);
+    const player = spawnPlayer(this.world, id, this.clients.size, demoLevel);
+    this.clients.set(id, { id, socket, player, input: idleInput() });
 
-    const connection: ClientConnection = {
-      id,
-      socket,
-      actor,
-      pendingInputs: [],
-    };
-    this.clients.set(id, connection);
-
-    const welcome: WelcomeMessage = { type: 'welcome', playerId: id };
-    socket.send(JSON.stringify(welcome));
+    socket.send(JSON.stringify({ type: 'welcome', playerId: id }));
     this.broadcastSnapshot();
-
     return id;
   }
 
-  removeClient(id: string) {
-    const connection = this.clients.get(id);
-    if (!connection) {
+  removeClient(id: string): void {
+    if (!this.clients.delete(id)) {
       return;
     }
 
-    this.world.removeActor(connection.actor);
-    removePlayer(this.world.game, id);
-    this.clients.delete(id);
+    removePlayer(this.world, id);
     this.broadcastSnapshot();
   }
 
-  queueInput(id: string, input: PlayerActorMessage) {
+  receiveInput(id: string, input: PlayerInput): void {
     const connection = this.clients.get(id);
     if (!connection) {
       return;
     }
 
-    connection.pendingInputs.push(input);
+    connection.input = mergeInput(connection.input, input);
   }
 
-  tick() {
+  tick(): void {
     for (const connection of this.clients.values()) {
-      for (const input of connection.pendingInputs) {
-        connection.actor.send(input);
-      }
-      connection.pendingInputs.length = 0;
+      applyInput(connection.player, connection.input);
+      connection.input = clearJump(connection.input);
     }
 
-    this.world.step(DELTA_T);
+    stepPhysics(this.world, DELTA_T / 1000);
     this.broadcastSnapshot();
   }
 
-  private broadcastSnapshot() {
-    const snapshot = serializeWorldSnapshot(this.world.game);
-    const payload = JSON.stringify(snapshot);
-
+  private broadcastSnapshot(): void {
+    const payload = JSON.stringify(serializeWorld(this.world));
     for (const connection of this.clients.values()) {
       if (connection.socket.readyState === WebSocket.OPEN) {
         connection.socket.send(payload);
       }
     }
+  }
+}
+
+function readClientMessage(data: unknown): PlayerInput | null {
+  try {
+    const parsed: unknown = JSON.parse(String(data));
+    return isClientMessage(parsed) ? parsed.input : null;
+  } catch {
+    return null;
   }
 }
 
@@ -103,13 +97,9 @@ wss.on('connection', (socket) => {
   const clientId = gameServer.addClient(socket);
 
   socket.on('message', (data) => {
-    try {
-      const message = JSON.parse(String(data)) as ClientMessage;
-      if (message.type === 'input') {
-        gameServer.queueInput(clientId, message.input);
-      }
-    } catch {
-      // ignore malformed messages
+    const input = readClientMessage(data);
+    if (input) {
+      gameServer.receiveInput(clientId, input);
     }
   });
 

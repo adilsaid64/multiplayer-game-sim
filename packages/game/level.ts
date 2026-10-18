@@ -1,34 +1,46 @@
-import { demoLevel, type LevelDefinition } from './levels/demo';
-import { Game, Platform, Player } from './entities';
+import type { Platform, Player, Vec2, World } from './types';
 
-export function createGameFromLevel(level: LevelDefinition = demoLevel): Game {
-  const platforms = level.platforms.map(
-    (platform) => new Platform(platform)
-  );
+export type Level = {
+  platforms: Platform[];
+  spawnPoints: Vec2[];
+  playerSize: Vec2;
+};
 
-  return new Game({
+function copyPlatform(platform: Platform): Platform {
+  return {
+    position: { ...platform.position },
+    size: { ...platform.size },
+  };
+}
+
+export function createWorld(level: Level): World {
+  return {
     players: [],
-    platforms,
-  });
+    platforms: level.platforms.map(copyPlatform),
+  };
 }
 
 export function spawnPlayer(
-  game: Game,
+  world: World,
   id: string,
   spawnIndex: number,
-  level: LevelDefinition = demoLevel
+  level: Level,
 ): Player {
-  const spawnPoint =
-    level.spawnPoints[spawnIndex % level.spawnPoints.length];
-  const player = new Player({
+  const spawnPoint = level.spawnPoints[spawnIndex % level.spawnPoints.length];
+  if (!spawnPoint) {
+    throw new Error('Level has no spawn points');
+  }
+  const player: Player = {
     id,
-    startingPosition: spawnPoint,
-    size: level.playerSize,
-  });
-  game.players.push(player);
+    position: { ...spawnPoint },
+    size: { ...level.playerSize },
+    velocity: { x: 0, y: 0 },
+    grounded: false,
+  };
+  world.players.push(player);
   return player;
 }
 
-export function removePlayer(game: Game, playerId: string) {
-  game.players = game.players.filter((player) => player.id !== playerId);
+export function removePlayer(world: World, playerId: string): void {
+  world.players = world.players.filter((player) => player.id !== playerId);
 }
